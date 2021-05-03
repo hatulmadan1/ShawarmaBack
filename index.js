@@ -125,49 +125,4 @@ app.post("/review", function(request, response){
     response.status(200).send("Added succesfully");
 });
 
-app.get("/fix", function(request, response){
-    let name = "PITA's";
-    let raiting = 4;
-    let text = "";
-    MongoClient.connect("mongodb://localhost:27017/", { useNewUrlParser: true, useUnifiedTopology: true }, function(err, client){
-        client.db("shawarmadb").collection("reviews").insertOne({'name': name, 'raiting': raiting, 'text': text}, function(err, results){
-            console.log(results);
-        });
-
-        let reviewsCount = 0;
-        let shawarmaRaiting = 0;
-        client.db("shawarmadb").collection("shawarmas").find({'name': name}).toArray(function(err, results){
-            reviewsCount = results[0].reviewsCount;
-            shawarmaRaiting = results[0].raiting;
-            client.db("shawarmadb").collection("shawarmas").updateOne(
-                {'name': name}, 
-                { $set: {'name': name, 
-                'raiting': (shawarmaRaiting * reviewsCount + raiting) / (reviewsCount + 1), 
-                'reviewsCount': reviewsCount + 1}},
-                function(err, result){
-                          
-                    console.log(result);
-                    client.close();
-                }
-            );
-
-            if(err){
-                response.status(500).send("Loading from DB failed");
-                return console.log(err);
-            }
-        });
-
-        console.log(shawarmaRaiting);
-        console.log(reviewsCount);
-
-        
-
-        if(err){
-            response.status(500).send("Adding to DB failed");
-            return console.log(err);
-        }
-    });
-    response.status(200).send("Added succesfully");
-});
-
 app.listen(3000);
